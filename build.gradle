@@ -1,0 +1,67 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+    id "com.gradle.plugin-publish" version "0.9.10"
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation group: 'commons-io', name:'commons-io', version: "${commonsIoVersion}"
+
+
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "org.assertj:assertj-core:${assertJVersion}"
+}
+
+group = "uk.co.boothen.gradle"
+version = "${pluginVersion}"
+
+gradlePlugin {
+    plugins {
+        kubectlPlugin {
+            id = "uk.co.boothen.gradle.kubectl"
+            implementationClass = "uk.co.boothen.gradle.kubectl.KubectlPlugin"
+        }
+    }
+}
+
+pluginBundle {
+    website = "https://github.com/boothen/gradle-kubectl"
+    vcsUrl = "https://github.com/boothen/gradle-kubectl"
+    description = "Gradle plugin to wrap kubectl."
+
+    plugins {
+        kubectlPlugin {
+            id = "uk.co.boothen.gradle.kubectl"
+            displayName = "Kubectl plugin"
+            description = "Kubectl Gradle plugin."
+            tags = ['kubectl', 'plugin']
+
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+    options.encoding = 'UTF-8'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.6'
+}
+
+publishing {
+    publications {
+        pluginPublication (MavenPublication) {
+            from    components.java
+            groupId    project.group
+            artifactId    "gradle-kubectl"
+            version    project.version
+        }
+    }
+}
