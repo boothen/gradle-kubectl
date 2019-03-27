@@ -16,18 +16,18 @@
 
 package uk.co.boothen.gradle.kubectl.extension;
 
+import org.gradle.api.Action;
 import org.gradle.api.Task;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class KubectlPluginExtension {
 
-    private String podName;
     private String file;
     private Task requiredBy;
-    private Integer portForward;
-
-    public String getPodName() {
-        return podName;
-    }
+    private List<Pod> pod = new ArrayList<>();
+    private List<PortForward> portForward = new ArrayList<>();
 
     public String getFile() {
         return file;
@@ -35,14 +35,6 @@ public class KubectlPluginExtension {
 
     public Task getRequiredBy() {
         return requiredBy;
-    }
-
-    public Integer getPortForward() {
-        return portForward;
-    }
-
-    public void setPodName(String podName) {
-        this.podName = podName;
     }
 
     public void setFile(String file) {
@@ -53,7 +45,31 @@ public class KubectlPluginExtension {
         this.requiredBy = requiredBy;
     }
 
-    public void setPortForward(Integer portForward) {
-        this.portForward = portForward;
+    public List<Pod> getPod() {
+        return pod;
+    }
+
+    public void pod(Action<? super Pod> action) {
+        Pod pod = new Pod();
+        action.execute(pod);
+        this.pod.add(pod);
+    }
+
+    public List<PortForward> getPortForward() {
+        return portForward;
+    }
+
+    public void portForward(Action<? super PortForward> action) {
+        PortForward portForward = new PortForward();
+        action.execute(portForward);
+        this.portForward.add(portForward);
+    }
+
+    public void setPods(List<Pod> pods) {
+        pod = pods;
+    }
+
+    public void setPortForwards(List<PortForward> portForwards) {
+        portForward = portForwards;
     }
 }

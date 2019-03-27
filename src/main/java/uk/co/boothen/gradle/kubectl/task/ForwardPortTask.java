@@ -26,12 +26,14 @@ import java.io.IOException;
 public class ForwardPortTask extends DefaultTask {
 
     private Property<String> podName;
-    private Property<Integer> portForward;
+    private Property<Integer> port;
+    private Property<Integer> targetPort;
     private Process process;
 
     public ForwardPortTask() {
         podName = getProject().getObjects().property(String.class);
-        portForward = getProject().getObjects().property(Integer.class);
+        port = getProject().getObjects().property(Integer.class);
+        targetPort = getProject().getObjects().property(Integer.class);
     }
 
     @Input
@@ -40,22 +42,32 @@ public class ForwardPortTask extends DefaultTask {
     }
 
     @Input
-    public Property<Integer> getPortForward() {
-        return portForward;
+    public Property<Integer> getPort() {
+        return port;
+    }
+
+    @Input
+    public Property<Integer> getTargetPort() {
+        return targetPort;
     }
 
     public Process process() {
         return process;
     }
 
+    public String taskName() {
+        return podName.get() + "-" + port.get();
+    }
+
     @TaskAction
     public void taskAction() throws IOException, InterruptedException {
 
-        if (!portForward.isPresent()) {
+        if (!port.isPresent()) {
             return;
         }
 
-        process = new ProcessBuilder("kubectl", "port-forward", podName.get(), String.format("%d:%d", portForward.get(), portForward.get()))
+        Integer resolvedTargetPort = targetPort.getOrElse(port.get());
+        process = new ProcessBuilder("kubectl", "port-forward", podName.get(), String.format("%d:%d", port.get(), resolvedTargetPort))
                 .start();
     }
 

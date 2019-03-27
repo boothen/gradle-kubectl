@@ -32,7 +32,7 @@ gradlePlugin {
 pluginBundle {
     website = "https://github.com/boothen/gradle-kubectl"
     vcsUrl = "https://github.com/boothen/gradle-kubectl"
-    description = "Gradle plugin to wrap kubectl."
+    description = "Simple Gradle plugin to wrap kubectl."
 
     plugins {
         kubectlPlugin {

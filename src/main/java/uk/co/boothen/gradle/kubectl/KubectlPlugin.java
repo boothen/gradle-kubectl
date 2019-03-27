@@ -18,14 +18,20 @@ package uk.co.boothen.gradle.kubectl;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 
 import uk.co.boothen.gradle.kubectl.extension.KubectlPluginExtension;
+import uk.co.boothen.gradle.kubectl.extension.Pod;
+import uk.co.boothen.gradle.kubectl.extension.PortForward;
 import uk.co.boothen.gradle.kubectl.task.ForwardPortTask;
 import uk.co.boothen.gradle.kubectl.task.StartTask;
 import uk.co.boothen.gradle.kubectl.task.StopForwardPortTask;
 import uk.co.boothen.gradle.kubectl.task.StopPodTask;
 import uk.co.boothen.gradle.kubectl.task.StopServiceTask;
 import uk.co.boothen.gradle.kubectl.task.WaitTask;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class KubectlPlugin implements Plugin<Project> {
 
@@ -36,7 +42,6 @@ public class KubectlPlugin implements Plugin<Project> {
 
         // Need to check kubectl installed and version 1.12 or above.
 
-
         project.afterEvaluate(action -> {
             KubectlPluginExtension extension = action.getExtensions().getByType(KubectlPluginExtension.class);
             if (extension.getRequiredBy() == null) {
@@ -44,32 +49,53 @@ public class KubectlPlugin implements Plugin<Project> {
                 return;
             }
 
+            List<Task> dependsOnTaskList = new ArrayList<>();
             StartTask startTask = project.getTasks().create("startPod", StartTask.class);
             startTask.getFile().set(project.file(extension.getFile()));
+            dependsOnTaskList.add(startTask);
 
-            WaitTask waitTask = project.getTasks().create("waitingForPod", WaitTask.class);
-            waitTask.getPodName().set(extension.getPodName());
-            waitTask.mustRunAfter(startTask);
+            Task lastWaitTask = null;
+            for (Pod pod : extension.getPod()) {
+                WaitTask waitTask2 = project.getTasks().create("waitingForPod-" + pod.getPodName(), WaitTask.class);
+                waitTask2.getPodName().set(pod.getPodName());
+                waitTask2.mustRunAfter(startTask);
+                dependsOnTaskList.add(waitTask2);
+                lastWaitTask = waitTask2;
+            }
 
-            ForwardPortTask forwardPortTask = project.getTasks().create("forwardPort", ForwardPortTask.class);
-            forwardPortTask.getPodName().set(extension.getPodName());
-            forwardPortTask.getPortForward().set(extension.getPortForward());
-            forwardPortTask.mustRunAfter(waitTask);
+            List<ForwardPortTask> portForwardTaskList = new ArrayList<>();
+            for (PortForward portForward : extension.getPortForward()) {
+                ForwardPortTask forwardPortTask2 = project.getTasks().create("forwardPort-" + portForward.getService() + "-" + portForward.getPort(), ForwardPortTask.class);
+                forwardPortTask2.getPodName().set(portForward.getService());
+                forwardPortTask2.getPort().set(portForward.getPort());
+                forwardPortTask2.getTargetPort().set(portForward.getTargetPort());
+                forwardPortTask2.mustRunAfter(lastWaitTask);
+                dependsOnTaskList.add(forwardPortTask2);
+                portForwardTaskList.add(forwardPortTask2);
+            }
 
-            extension.getRequiredBy().dependsOn(startTask, waitTask, forwardPortTask);
+            extension.getRequiredBy().dependsOn(dependsOnTaskList.toArray());
 
-            StopPodTask stopPodTask = project.getTasks().create("stopPod", StopPodTask.class);
-            stopPodTask.getPodName().set(extension.getPodName());
+            List<Task> finalizedByTaskList = new ArrayList<>();
+            for (Pod pod : extension.getPod()) {
+                StopPodTask stopPodTask = project.getTasks().create("stopPod-" + pod.getPodName(), StopPodTask.class);
+                stopPodTask.getPodName().set(pod.getPodName());
+                finalizedByTaskList.add(stopPodTask);
+            }
 
-            StopServiceTask stopServiceTask = project.getTasks().create("stopService", StopServiceTask.class);
-            stopServiceTask.getServiceName().set(extension.getPodName());
+            for (Pod pod : extension.getPod()) {
+                StopServiceTask stopServiceTask = project.getTasks().create("stopService-" + pod.getPodName(), StopServiceTask.class);
+                stopServiceTask.getServiceName().set(pod.getPodName());
+                finalizedByTaskList.add(stopServiceTask);
+            }
 
-            stopServiceTask.mustRunAfter(stopPodTask);
+            for (ForwardPortTask forwardPortTask : portForwardTaskList) {
+                StopForwardPortTask stopForwardPortTask = project.getTasks().create("stopForwardPort-" + forwardPortTask.taskName(), StopForwardPortTask.class);
+                stopForwardPortTask.setForwardPortTask(forwardPortTask);
+                finalizedByTaskList.add(stopForwardPortTask);
+            }
 
-            StopForwardPortTask stopForwardPortTask = project.getTasks().create("stopForwardPort", StopForwardPortTask.class);
-            stopForwardPortTask.setForwardPortTask(forwardPortTask);
-
-            extension.getRequiredBy().finalizedBy(stopForwardPortTask, stopPodTask, stopServiceTask);
+            extension.getRequiredBy().finalizedBy(finalizedByTaskList);
         });
     }
 }

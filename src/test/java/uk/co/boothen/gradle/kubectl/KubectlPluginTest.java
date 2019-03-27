@@ -22,7 +22,11 @@ import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Test;
 
 import uk.co.boothen.gradle.kubectl.extension.KubectlPluginExtension;
+import uk.co.boothen.gradle.kubectl.extension.Pod;
+import uk.co.boothen.gradle.kubectl.extension.PortForward;
 import uk.co.boothen.gradle.kubectl.task.StartTask;
+
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,8 +41,10 @@ public class KubectlPluginTest {
         KubectlPluginExtension kubectlPluginExtension = new KubectlPluginExtension();
         kubectlPluginExtension.setFile("kube.yaml");
         kubectlPluginExtension.setRequiredBy(test);
-        kubectlPluginExtension.setPodName("reference-dynamodb");
-        kubectlPluginExtension.setPortForward(8000);
+        Pod pod = new Pod("dynamodb");
+        kubectlPluginExtension.setPods(Collections.singletonList(pod));
+        PortForward portForward = new PortForward("dynamodb", 8000, 800);
+        kubectlPluginExtension.setPortForwards(Collections.singletonList(portForward));
 
         project.getPluginManager().apply("uk.co.boothen.gradle.kubectl");
 
