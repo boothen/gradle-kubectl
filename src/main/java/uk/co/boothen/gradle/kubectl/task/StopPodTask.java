@@ -18,7 +18,6 @@ package uk.co.boothen.gradle.kubectl.task;
 
 import org.apache.commons.io.IOUtils;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.GradleException;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -49,8 +48,7 @@ public class StopPodTask extends DefaultTask {
         int process = stopPod.waitFor();
         if (process != 0) {
             String e = IOUtils.toString(stopPod.getErrorStream(), StandardCharsets.UTF_8);
-            logger.error("Failed to stop pod: " + e);
-            throw new GradleException(e);
+            logger.warn("Failed to stop pod: " + e);
         }
 
         String s = IOUtils.toString(stopPod.getInputStream(), StandardCharsets.UTF_8);

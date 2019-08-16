@@ -26,6 +26,7 @@ public class KubectlPluginExtension {
 
     private String file;
     private Task requiredBy;
+    private boolean forceStopBeforeStart;
     private List<Pod> pod = new ArrayList<>();
     private List<PortForward> portForward = new ArrayList<>();
 
@@ -43,6 +44,14 @@ public class KubectlPluginExtension {
 
     public void setRequiredBy(Task requiredBy) {
         this.requiredBy = requiredBy;
+    }
+
+    public boolean isForceStopBeforeStart() {
+        return forceStopBeforeStart;
+    }
+
+    public void setForceStopBeforeStart(boolean forceStopBeforeStart) {
+        this.forceStopBeforeStart = forceStopBeforeStart;
     }
 
     public List<Pod> getPod() {

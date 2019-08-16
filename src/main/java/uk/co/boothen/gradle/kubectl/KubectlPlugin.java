@@ -50,8 +50,23 @@ public class KubectlPlugin implements Plugin<Project> {
             }
 
             List<Task> dependsOnTaskList = new ArrayList<>();
+            if (extension.isForceStopBeforeStart()) {
+                for (Pod pod : extension.getPod()) {
+                    StopPodTask stopPodTask = project.getTasks().create("stopOrphanedPod-" + pod.getPodName(), StopPodTask.class);
+                    stopPodTask.getPodName().set(pod.getPodName());
+                    dependsOnTaskList.add(stopPodTask);
+                }
+
+                for (Pod pod : extension.getPod()) {
+                    StopServiceTask stopServiceTask = project.getTasks().create("stopOrphanedService-" + pod.getPodName(), StopServiceTask.class);
+                    stopServiceTask.getServiceName().set(pod.getPodName());
+                    dependsOnTaskList.add(stopServiceTask);
+                }
+            }
+
             StartTask startTask = project.getTasks().create("startPod", StartTask.class);
             startTask.getFile().set(project.file(extension.getFile()));
+            startTask.mustRunAfter(dependsOnTaskList.toArray());
             dependsOnTaskList.add(startTask);
 
             Task lastWaitTask = null;
