@@ -27,6 +27,7 @@ public class KubectlPluginExtension {
     private String file;
     private Task requiredBy;
     private boolean forceStopBeforeStart;
+    private long waitForTimeout = 60;
     private List<Pod> pod = new ArrayList<>();
     private List<PortForward> portForward = new ArrayList<>();
 
@@ -52,6 +53,14 @@ public class KubectlPluginExtension {
 
     public void setForceStopBeforeStart(boolean forceStopBeforeStart) {
         this.forceStopBeforeStart = forceStopBeforeStart;
+    }
+
+    public long getWaitForTimeout() {
+        return waitForTimeout;
+    }
+
+    public void setWaitForTimeout(long waitForTimeout) {
+        this.waitForTimeout = waitForTimeout;
     }
 
     public List<Pod> getPod() {

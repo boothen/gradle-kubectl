@@ -73,6 +73,7 @@ public class KubectlPlugin implements Plugin<Project> {
             for (Pod pod : extension.getPod()) {
                 WaitTask waitTask2 = project.getTasks().create("waitingForPod-" + pod.getPodName(), WaitTask.class);
                 waitTask2.getPodName().set(pod.getPodName());
+                waitTask2.getWaitForTimeout().set(extension.getWaitForTimeout());
                 waitTask2.mustRunAfter(startTask);
                 dependsOnTaskList.add(waitTask2);
                 lastWaitTask = waitTask2;

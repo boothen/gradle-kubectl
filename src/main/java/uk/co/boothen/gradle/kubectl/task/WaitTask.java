@@ -26,18 +26,26 @@ import org.gradle.api.tasks.TaskAction;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 public class WaitTask extends DefaultTask {
 
     private Property<String> podName;
+    private Property<Long> waitForTimeout;
 
     public WaitTask() {
         podName = getProject().getObjects().property(String.class);
+        waitForTimeout = getProject().getObjects().property(Long.class);
     }
 
     @Input
     public Property<String> getPodName() {
         return podName;
+    }
+
+    @Input
+    public Property<Long> getWaitForTimeout() {
+        return waitForTimeout;
     }
 
     @TaskAction
@@ -46,8 +54,8 @@ public class WaitTask extends DefaultTask {
                 .start();
 
         Logger logger = getProject().getLogger();
-        int process = waitProcess.waitFor();
-        if (process != 0) {
+        boolean process = waitProcess.waitFor(60, TimeUnit.SECONDS);
+        if (!process) {
             String e = IOUtils.toString(waitProcess.getErrorStream(), StandardCharsets.UTF_8);
             logger.error("Failed to wait for Pod: " + e);
             throw new GradleException(e);
