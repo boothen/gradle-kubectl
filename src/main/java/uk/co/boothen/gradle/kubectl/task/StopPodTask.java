@@ -25,7 +25,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class StopPodTask extends DefaultTask {
 
@@ -48,12 +48,12 @@ public class StopPodTask extends DefaultTask {
         Logger logger = getProject().getLogger();
         int process = stopPod.waitFor();
         if (process != 0) {
-            String e = IOUtils.toString(stopPod.getErrorStream(), Charset.forName("UTF-8"));
+            String e = IOUtils.toString(stopPod.getErrorStream(), StandardCharsets.UTF_8);
             logger.error("Failed to stop pod: " + e);
             throw new GradleException(e);
         }
 
-        String s = IOUtils.toString(stopPod.getInputStream(), Charset.forName("UTF-8"));
+        String s = IOUtils.toString(stopPod.getInputStream(), StandardCharsets.UTF_8);
         logger.info(s);
     }
 }

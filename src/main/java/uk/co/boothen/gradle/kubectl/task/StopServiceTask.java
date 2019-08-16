@@ -18,14 +18,13 @@ package uk.co.boothen.gradle.kubectl.task;
 
 import org.apache.commons.io.IOUtils;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.GradleException;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class StopServiceTask extends DefaultTask {
 
@@ -48,12 +47,11 @@ public class StopServiceTask extends DefaultTask {
         Logger logger = getProject().getLogger();
         int process = stopService.waitFor();
         if (process != 0) {
-            String e = IOUtils.toString(stopService.getErrorStream(), Charset.forName("UTF-8"));
-            logger.error("Failed to stop service: " + e);
-            throw new GradleException(e);
+            String e = IOUtils.toString(stopService.getErrorStream(), StandardCharsets.UTF_8);
+            logger.warn("Failed to stop service: " + e);
         }
 
-        String s = IOUtils.toString(stopService.getInputStream(), Charset.forName("UTF-8"));
+        String s = IOUtils.toString(stopService.getInputStream(), StandardCharsets.UTF_8);
         logger.info(s);
     }
 }

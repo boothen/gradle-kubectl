@@ -8,7 +8,7 @@ Gradle plugin that uses Kubectl to manage pods used during Gradle build phase
 
 ```groovy
 plugins {
-  id "uk.co.boothen.gradle.kubectl" version "0.1" apply false
+  id "uk.co.boothen.gradle.kubectl" version "0.3" apply false
 }
 ```
 
@@ -19,8 +19,15 @@ apply plugin: 'uk.co.boothen.gradle.kubectl'
 
 kubectl {
     requiredBy test // task
-    podName 'reference-dynamodb' // name of the pod in the configuration file
     file 'kube.yaml' // configuration file to apply
-    portForward 8000 // port to forward between local and pod
+    pod {
+        podName 'reference-dynamodb' // name of the pod in the configuration file
+    }
+   
+    portForward {
+        service 'reference-dynamodb'
+        port 8000 // localhost port
+        targetPort 8000 // service port
+    }
 }
 ```
