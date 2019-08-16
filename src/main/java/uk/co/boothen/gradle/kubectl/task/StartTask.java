@@ -26,7 +26,7 @@ import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class StartTask extends DefaultTask {
 
@@ -50,12 +50,12 @@ public class StartTask extends DefaultTask {
 
         int processCode = startKube.waitFor();
         if (processCode != 0) {
-            String e = IOUtils.toString(startKube.getErrorStream(), Charset.forName("UTF-8"));
+            String e = IOUtils.toString(startKube.getErrorStream(), StandardCharsets.UTF_8);
             logger.error("Couldn't start Pod: " + e);
             throw new GradleException(e);
         }
 
-        String s = IOUtils.toString(startKube.getInputStream(), Charset.forName("UTF-8"));
+        String s = IOUtils.toString(startKube.getInputStream(), StandardCharsets.UTF_8);
         logger.info(s);
     }
 }
