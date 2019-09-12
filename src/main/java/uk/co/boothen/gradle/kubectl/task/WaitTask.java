@@ -50,11 +50,15 @@ public class WaitTask extends DefaultTask {
 
     @TaskAction
     public void taskAction() throws IOException, InterruptedException {
-        Process waitProcess = new ProcessBuilder("kubectl", "wait", "--for=condition=Ready", "pod/" + podName.get())
+        Process waitProcess = new ProcessBuilder("kubectl",
+                                                 "wait",
+                                                 "--for=condition=Ready",
+                                                 "pod/" + podName.get(),
+                                                 "--timeout=" + waitForTimeout.get() + "s")
                 .start();
 
         Logger logger = getProject().getLogger();
-        boolean process = waitProcess.waitFor(60, TimeUnit.SECONDS);
+        boolean process = waitProcess.waitFor(waitForTimeout.get(), TimeUnit.SECONDS);
         if (!process) {
             String e = IOUtils.toString(waitProcess.getErrorStream(), StandardCharsets.UTF_8);
             logger.error("Failed to wait for Pod: " + e);

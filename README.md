@@ -8,7 +8,7 @@ Gradle plugin that uses Kubectl to manage pods used during Gradle build phase
 
 ```groovy
 plugins {
-  id "uk.co.boothen.gradle.kubectl" version "0.6" apply false
+  id "uk.co.boothen.gradle.kubectl" version "0.7" apply false
 }
 ```
 

@@ -69,14 +69,14 @@ public class KubectlPlugin implements Plugin<Project> {
             startTask.mustRunAfter(dependsOnTaskList.toArray());
             dependsOnTaskList.add(startTask);
 
-            Task lastWaitTask = null;
+            List<WaitTask> waitForPodTaskList = new ArrayList<>();
             for (Pod pod : extension.getPod()) {
                 WaitTask waitTask2 = project.getTasks().create("waitingForPod-" + pod.getPodName(), WaitTask.class);
                 waitTask2.getPodName().set(pod.getPodName());
                 waitTask2.getWaitForTimeout().set(extension.getWaitForTimeout());
                 waitTask2.mustRunAfter(startTask);
                 dependsOnTaskList.add(waitTask2);
-                lastWaitTask = waitTask2;
+                waitForPodTaskList.add(waitTask2);
             }
 
             List<ForwardPortTask> portForwardTaskList = new ArrayList<>();
@@ -85,7 +85,7 @@ public class KubectlPlugin implements Plugin<Project> {
                 forwardPortTask2.getPodName().set(portForward.getService());
                 forwardPortTask2.getPort().set(portForward.getPort());
                 forwardPortTask2.getTargetPort().set(portForward.getTargetPort());
-                forwardPortTask2.mustRunAfter(lastWaitTask);
+                forwardPortTask2.mustRunAfter(waitForPodTaskList.toArray());
                 dependsOnTaskList.add(forwardPortTask2);
                 portForwardTaskList.add(forwardPortTask2);
             }
