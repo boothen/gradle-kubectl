@@ -1,5 +1,5 @@
-Gradle Kubectl Plugin
-======================
+Gradle Kubectl Plugin [![Build Status](https://secure.travis-ci.org/boothen/gradle-kubectl.png)](http://travis-ci.org/boothen/gradle-kubectl)
+=====================
 
 Gradle plugin that uses Kubectl to start/stop pods and services around a Gradle task. For instance where the test task requires a datastore to be running, the plugin could start and stop the container containing that datastore. The intention of the plugin is to use Kubernetes instead of Docker to manage the containers used during the Gradle task. This could be a requirement where Jenkins slaves are managed by Kubernetes. 
 
